@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.SetOperations;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
@@ -16,8 +17,8 @@ public class Seckill {
 
     @GetMapping("seckill")
     public Boolean redis_seckill(){
-        UUID uuid = UUID.randomUUID();
-        boolean seckill = seckill("01", uuid.toString());
+        String userid = new Random().nextInt(50000) + "";
+        boolean seckill = seckill("01", userid);
         return seckill;
     }
 
