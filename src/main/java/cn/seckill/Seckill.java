@@ -53,7 +53,7 @@ public class Seckill {
 
         //库存-1
         redisTemplate.opsForValue().decrement(kcKey);
-        //把抢到的用户id加入redis
+        //吧抢到的用户id加入redis
         SetOperations setOperations = redisTemplate.opsForSet();
         setOperations.add(userKey,userid);
         System.out.println("秒杀成功");
