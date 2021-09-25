@@ -14,7 +14,6 @@ import java.util.Set;
 public class Seckill {
     @Autowired
     private RedisTemplate redisTemplate;
-    //private StringRedisTemplate redisTemplate;
 
     @GetMapping("seckill")
     public Boolean redis_seckill(){
