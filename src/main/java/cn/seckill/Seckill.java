@@ -66,6 +66,7 @@ public class Seckill {
         //吧抢到的用户id加入redis
         redisTemplate.opsForSet().add(userKey,userid);
 
+        //执行
         List<Object> result = redisTemplate.exec();
         if(result.size()==0||result==null){
             System.out.println("秒杀失败。。。。");
