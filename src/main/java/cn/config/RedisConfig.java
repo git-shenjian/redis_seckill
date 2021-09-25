@@ -22,6 +22,7 @@ import java.time.Duration;
 
 @EnableCaching
 @Configuration
+@SuppressWarnings("all")
 public class RedisConfig extends CachingConfigurerSupport {
 
     @Bean
@@ -40,6 +41,8 @@ public class RedisConfig extends CachingConfigurerSupport {
         template.setValueSerializer(jackson2JsonRedisSerializer);
         //value hashmap序列化
         template.setHashValueSerializer(jackson2JsonRedisSerializer);
+        // 开启事务支持，在同一个 Connection 中执行命令
+        template.setEnableTransactionSupport(true);
         return template;
     }
 

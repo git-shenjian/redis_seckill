@@ -1,19 +1,20 @@
 package cn.seckill;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.UUID;
 
 @RestController
 public class Seckill {
     @Autowired
     private RedisTemplate redisTemplate;
+    //private StringRedisTemplate redisTemplate;
 
     @GetMapping("seckill")
     public Boolean redis_seckill(){
@@ -27,10 +28,16 @@ public class Seckill {
         if(prodid==null||userid==null){
             return false;
         }
+
         //拼接商品库存key
         String kcKey = prodid+"kc";
         //拼接已经抢到商品用户key
         String userKey = "user"+prodid;
+
+        //开启事务
+        redisTemplate.setEnableTransactionSupport(true);
+        //监控库存key,watch（）监视key，在事务执行过程中，如果key对应的值被改变，则事务被打断
+        redisTemplate.watch(kcKey);
 
         //判断库存是否为null
         String kc = redisTemplate.opsForValue().get(kcKey).toString();
@@ -52,12 +59,19 @@ public class Seckill {
             return false;
         }
 
+        //使用事务
+        redisTemplate.multi();
         //库存-1
         redisTemplate.opsForValue().decrement(kcKey);
         //吧抢到的用户id加入redis
-        SetOperations setOperations = redisTemplate.opsForSet();
-        setOperations.add(userKey,userid);
-        System.out.println("秒杀成功");
+        redisTemplate.opsForSet().add(userKey,userid);
+
+        List<Object> result = redisTemplate.exec();
+        if(result.size()==0||result==null){
+            System.out.println("秒杀失败。。。。");
+            return false;
+        }
+        System.out.println("秒杀成功。。。。");
         return true;
     }
 }
