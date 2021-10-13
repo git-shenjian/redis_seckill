@@ -73,4 +73,5 @@ public class Seckill {
         System.out.println("秒杀成功。。。。");
         return true;
     }
+
 }
