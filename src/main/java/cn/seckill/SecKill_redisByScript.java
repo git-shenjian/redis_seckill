@@ -2,21 +2,15 @@ package cn.seckill;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import cn.util.JedisPoolUtil;
 import io.lettuce.core.internal.HostAndPort;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.core.joran.conditional.ElseAction;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.ShardedJedisPool;
-import redis.clients.jedis.Transaction;
+
 
 public class SecKill_redisByScript {
 	
@@ -34,7 +28,7 @@ public class SecKill_redisByScript {
 	}
 	
 	static String secKillScript ="local userid=KEYS[1];\r\n" + 
-			"local prodid=KEYS[2];\r\n" + 
+			"local prodid=KEYS[2];\r\n" +
 			"local qtkey='sk:'..prodid..\":qt\";\r\n" + 
 			"local usersKey='sk:'..prodid..\":usr\";\r\n" + 
 			"local userExists=redis.call(\"sismember\",usersKey,userid);\r\n" + 
