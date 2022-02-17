@@ -8,8 +8,6 @@ public class JedisPoolUtil {
     private static volatile JedisPool jedisPool = null;
 
     private JedisPoolUtil() {
-
-        System.out.println("");
     }
 
     public static JedisPool getJedisPoolInstance() {
