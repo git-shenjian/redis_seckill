@@ -1,24 +1,87 @@
 package cn.seckill;
 
+import cn.util.JedisPoolUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 public class Seckill {
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    static String secKillScript ="local userid=KEYS[1];\n" +
+            "local prodid=KEYS[2];\n" +
+            "local qtkey=prodid..\"kc\";\n" +
+            "local usersKey=\"user\"..prodid;\n" +
+            "local userExists=redis.call(\"sismember\",usersKey,userid);\n" +
+            "if tonumber(userExists)==1 then\n" +
+            "    return 2;\n" +
+            "end\n" +
+            "local num= redis.call(\"get\" ,qtkey);\n" +
+            "if tonumber(num)<=0 then\n" +
+            "    return 0;\n" +
+            "else\n" +
+            "    redis.call(\"decr\",qtkey);\n" +
+            "    redis.call(\"sadd\",usersKey,userid);\n" +
+            "end\n" +
+            "return 1;\n";
 
     @GetMapping("seckill")
     public Boolean redis_seckill(){
         String userid = new Random().nextInt(50000) + "";
-        boolean seckill = seckill("01", userid);
+        boolean seckill = seckill("01", userid);//存在库存遗留问题
+        //boolean seckill = seckillByLua("01", userid);//使用lua脚本解决库存遗留问题
         return seckill;
+    }
+
+    public boolean seckillByLua(String prodid,String userid){
+        //方法一：使用redisTemplate
+        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+        redisScript.setScriptText(secKillScript);
+        // 设置一下返回值类型 为Long
+        // 因为删除判断的时候，返回的0,给其封装为数据类型。如果不封装那么默认返回String 类型，
+        // 那么返回字符串与0 会有发生错误。
+        redisScript.setResultType(Long.class);
+        // 第一个要是script 脚本 ，第二个需要判断的key，第三个就是key所对应的值。
+        String reString = (String) redisTemplate.execute(redisScript, Arrays.asList(userid, prodid));
+        if ("0".equals( reString )  ) {
+            System.err.println("已抢空！！");
+        }else if("1".equals( reString )  )  {
+            System.out.println("抢购成功！！！！");
+        }else if("2".equals( reString )  )  {
+            System.err.println("该用户已抢过！！");
+        }else{
+            System.err.println("抢购异常！！");
+        }
+        return true;
+
+        //方法二、使用jedis
+        /*JedisPool jedispool =  JedisPoolUtil.getJedisPoolInstance();
+        Jedis jedis=jedispool.getResource();
+        String sha1=  jedis.scriptLoad(secKillScript);
+        Object result= jedis.evalsha(sha1, 2, userid,prodid);
+        String reString=String.valueOf(result);
+        if ("0".equals( reString )  ) {
+            System.err.println("已抢空！！");
+        }else if("1".equals( reString )  )  {
+            System.out.println("抢购成功！！！！");
+        }else if("2".equals( reString )  )  {
+            System.err.println("该用户已抢过！！");
+        }else{
+            System.err.println("抢购异常！！");
+        }
+        jedis.close();
+        return true;*/
     }
 
     public boolean seckill(String prodid,String userid){

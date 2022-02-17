@@ -27,22 +27,22 @@ public class SecKill_redisByScript {
 	//	doSecKill("201","sk:0101");
 	}
 	
-	static String secKillScript ="local userid=KEYS[1];\r\n" + 
-			"local prodid=KEYS[2];\r\n" +
-			"local qtkey='sk:'..prodid..\":qt\";\r\n" + 
-			"local usersKey='sk:'..prodid..\":usr\";\r\n" + 
-			"local userExists=redis.call(\"sismember\",usersKey,userid);\r\n" + 
-			"if tonumber(userExists)==1 then \r\n" + 
-			"   return 2;\r\n" + 
-			"end\r\n" + 
-			"local num= redis.call(\"get\" ,qtkey);\r\n" + 
-			"if tonumber(num)<=0 then \r\n" + 
-			"   return 0;\r\n" + 
-			"else \r\n" + 
-			"   redis.call(\"decr\",qtkey);\r\n" + 
-			"   redis.call(\"sadd\",usersKey,userid);\r\n" + 
-			"end\r\n" + 
-			"return 1" ;
+	static String secKillScript ="local userid=KEYS[1];\n" +
+			"local prodid=KEYS[2];\n" +
+			"local qtkey=prodid..\"kc\";\n" +
+			"local usersKey=\"user\"..prodid;\n" +
+			"local userExists=redis.call(\"sismember\",usersKey,userid);\n" +
+			"if tonumber(userExists)==1 then\n" +
+			"    return 2;\n" +
+			"end\n" +
+			"local num= redis.call(\"get\" ,qtkey);\n" +
+			"if tonumber(num)<=0 then\n" +
+			"    return 0;\n" +
+			"else\n" +
+			"    redis.call(\"decr\",qtkey);\n" +
+			"    redis.call(\"sadd\",usersKey,userid);\n" +
+			"end\n" +
+			"return 1;\n";
 			 
 	static String secKillScript2 = 
 			"local userExists=redis.call(\"sismember\",\"{sk}:0101:usr\",userid);\r\n" +
@@ -54,8 +54,7 @@ public class SecKill_redisByScript {
 		Jedis jedis=jedispool.getResource();
 		String sha1=  jedis.scriptLoad(secKillScript);
 		Object result= jedis.evalsha(sha1, 2, uid,prodid);
-
-		  String reString=String.valueOf(result);
+		String reString=String.valueOf(result);
 		if ("0".equals( reString )  ) {
 			System.err.println("已抢空！！");
 		}else if("1".equals( reString )  )  {

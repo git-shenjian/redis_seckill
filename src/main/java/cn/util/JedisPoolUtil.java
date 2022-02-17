@@ -8,6 +8,8 @@ public class JedisPoolUtil {
     private static volatile JedisPool jedisPool = null;
 
     private JedisPoolUtil() {
+
+        System.out.println("");
     }
 
     public static JedisPool getJedisPoolInstance() {
@@ -21,7 +23,7 @@ public class JedisPoolUtil {
                     poolConfig.setBlockWhenExhausted(true);
                     poolConfig.setTestOnBorrow(true);  // ping  PONG
 
-                    jedisPool = new JedisPool(poolConfig, "192.168.80.128", 6379, 60000 );
+                    jedisPool = new JedisPool(poolConfig, "192.168.154.128", 6379, 60000 );
                 }
             }
         }

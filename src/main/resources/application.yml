@@ -1,6 +1,6 @@
 spring:
   redis:
-    host: 192.168.80.128
+    host: 192.168.154.128
     port: 6379
     database: 0  #Redis数据库索引（默认为0）#Redis数据库索引（默认为0）
     timeout: 180000  #连接超时时间（毫秒）
